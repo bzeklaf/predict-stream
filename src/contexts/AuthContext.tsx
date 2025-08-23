@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -60,6 +61,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.id);
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -80,6 +82,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      if (session?.user) {
+        refreshProfile();
+      }
       setLoading(false);
     });
 
@@ -89,12 +94,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const signInWithWallet = async () => {
     try {
       if (!window.ethereum) {
-        toast({
-          title: "Wallet Not Found",
-          description: "Please install MetaMask or another Web3 wallet.",
-          variant: "destructive",
-        });
-        return { error: new Error("No wallet found") };
+        const error = new Error("No wallet found. Please install MetaMask or another Web3 wallet.");
+        return { error };
       }
 
       // Request account access
@@ -103,14 +104,16 @@ export function AuthProvider({ children }: AuthProviderProps) {
       });
       
       if (!accounts || accounts.length === 0) {
-        return { error: new Error("No accounts found") };
+        const error = new Error("No accounts found. Please make sure your wallet is unlocked.");
+        return { error };
       }
 
       const walletAddress = accounts[0];
+      console.log('Signing in with wallet:', walletAddress);
       
-      // Create a temporary email using wallet address
+      // Create a deterministic email and password from wallet address
       const email = `${walletAddress.toLowerCase()}@wallet.local`;
-      const password = walletAddress; // Use wallet address as password
+      const password = walletAddress.toLowerCase(); // Use lowercase for consistency
       
       // Try to sign in first
       let { error } = await supabase.auth.signInWithPassword({
@@ -120,10 +123,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       // If sign in fails, create account
       if (error && error.message.includes('Invalid login credentials')) {
+        console.log('Creating new account for wallet:', walletAddress);
+        
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
             data: {
               wallet_address: walletAddress,
               display_name: `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
@@ -132,11 +138,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
         
         if (signUpError) {
-          toast({
-            title: "Wallet Authentication Error",
-            description: signUpError.message,
-            variant: "destructive",
-          });
+          console.error('Sign up error:', signUpError);
           return { error: signUpError };
         }
 
@@ -147,63 +149,61 @@ export function AuthProvider({ children }: AuthProviderProps) {
         });
         
         if (finalSignInError) {
-          toast({
-            title: "Wallet Authentication Error",
-            description: finalSignInError.message,
-            variant: "destructive",
-          });
+          console.error('Final sign in error:', finalSignInError);
           return { error: finalSignInError };
         }
-      } else if (error) {
-        toast({
-          title: "Wallet Authentication Error",
-          description: error.message,
-          variant: "destructive",
-        });
-        return { error };
-      }
 
-      toast({
-        title: "Success!",
-        description: "Connected with crypto wallet.",
-      });
+        toast({
+          title: "Welcome!",
+          description: "Account created and wallet connected successfully.",
+        });
+      } else if (error) {
+        console.error('Sign in error:', error);
+        return { error };
+      } else {
+        toast({
+          title: "Welcome back!",
+          description: "Wallet connected successfully.",
+        });
+      }
 
       return { error: null };
     } catch (error: any) {
-      toast({
-        title: "Wallet Connection Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error('Wallet connection error:', error);
       return { error };
     }
   };
 
   const signInWithTelegram = async () => {
     try {
-      // For now, this is a placeholder that will open Telegram login
-      // In a real implementation, you'd integrate with Telegram's Login Widget
       toast({
-        title: "Telegram Login",
-        description: "Telegram authentication coming soon!",
+        title: "Coming Soon",
+        description: "Telegram authentication will be available soon!",
         variant: "default",
       });
       
-      // Placeholder for future Telegram integration
       return { error: new Error("Telegram authentication not yet implemented") };
     } catch (error: any) {
-      toast({
-        title: "Telegram Authentication Error",
-        description: error.message,
-        variant: "destructive",
-      });
       return { error };
     }
   };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast({
+          title: "Sign Out Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Signed Out",
+          description: "You have been successfully signed out.",
+        });
+      }
+    } catch (error: any) {
       toast({
         title: "Sign Out Error",
         description: error.message,

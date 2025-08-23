@@ -111,8 +111,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const walletAddress = accounts[0];
       console.log('Signing in with wallet:', walletAddress);
       
-      // Create a deterministic email and password from wallet address
-      const email = `${walletAddress.toLowerCase()}@wallet.local`;
+      // Create a valid email format using the wallet address
+      // Using @example.com which is a reserved domain for documentation/testing
+      const email = `${walletAddress.toLowerCase()}@example.com`;
       const password = walletAddress.toLowerCase(); // Use lowercase for consistency
       
       // Try to sign in first

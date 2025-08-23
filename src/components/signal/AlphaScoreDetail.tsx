@@ -9,7 +9,6 @@ import {
   BarChart3,
   Shield,
   Award,
-  Calendar,
   DollarSign
 } from "lucide-react";
 import AlphaScoreBadge from "./AlphaScoreBadge";
@@ -47,7 +46,6 @@ const AlphaScoreDetail = ({ score, breakdown, stats }: AlphaScoreDetailProps) =>
 
   return (
     <div className="space-y-6">
-      {/* Overall Score */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -81,7 +79,6 @@ const AlphaScoreDetail = ({ score, breakdown, stats }: AlphaScoreDetailProps) =>
         </CardContent>
       </Card>
 
-      {/* Score Breakdown */}
       <Card>
         <CardHeader>
           <CardTitle>Score Breakdown</CardTitle>
@@ -149,7 +146,6 @@ const AlphaScoreDetail = ({ score, breakdown, stats }: AlphaScoreDetailProps) =>
         </CardContent>
       </Card>
 
-      {/* Performance Stats */}
       <Card>
         <CardHeader>
           <CardTitle>Performance Statistics</CardTitle>
@@ -196,7 +192,6 @@ const AlphaScoreDetail = ({ score, breakdown, stats }: AlphaScoreDetailProps) =>
         </CardContent>
       </Card>
 
-      {/* Score Evolution */}
       <Card>
         <CardHeader>
           <CardTitle>Score Methodology</CardTitle>

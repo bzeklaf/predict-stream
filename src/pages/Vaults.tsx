@@ -8,22 +8,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Vault,
   TrendingUp,
-  TrendingDown,
   DollarSign,
   Users,
   BarChart3,
   Shield,
-  Zap,
   Building2,
   Plus,
   Eye,
-  ArrowUpRight,
-  ArrowDownRight
+  ArrowUpRight
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import AlphaScoreBadge from "@/components/signal/AlphaScoreBadge";
 
-// Mock data for SignalVaults
 const signalVaults = [
   {
     id: "1",
@@ -61,7 +56,6 @@ const signalVaults = [
   }
 ];
 
-// Mock data for MetaVaults
 const metaVaults = [
   {
     id: "1",
@@ -107,7 +101,6 @@ const Vaults = () => {
       <Navigation />
       
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold">Signal Vaults</h1>
@@ -127,7 +120,6 @@ const Vaults = () => {
           </div>
         </div>
 
-        {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-2">
@@ -186,7 +178,6 @@ const Vaults = () => {
           </Card>
         </div>
 
-        {/* Vault Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signal-vaults">SignalVaults</TabsTrigger>
@@ -235,7 +226,7 @@ const Vaults = () => {
                       <div className="space-y-1">
                         <span className="text-muted-foreground">APY</span>
                         <div className="font-medium text-bullish flex items-center gap-1">
-                          {vault.apy > 0 ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                          <ArrowUpRight className="w-3 h-3" />
                           {vault.apy}%
                         </div>
                       </div>

@@ -12,7 +12,6 @@ import {
   Shield,
   Unlock,
   Lock,
-  Star,
   AlertTriangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -33,21 +32,17 @@ export interface BlindSignal {
   isRevealed: boolean;
   tags: string[];
   riskLevel: "Low" | "Medium" | "High";
-  summary?: string; // Available after unlock
+  summary?: string;
 }
 
 interface BlindSignalCardProps {
   signal: BlindSignal;
-  variant?: "default" | "compact";
 }
 
-const BlindSignalCard = ({ signal, variant = "default" }: BlindSignalCardProps) => {
+const BlindSignalCard = ({ signal }: BlindSignalCardProps) => {
   const now = Date.now();
   const timeToReveal = signal.revealTime.getTime() - now;
-  const timeToExpiry = signal.expiryTime.getTime() - now;
-  
   const daysToReveal = Math.max(0, Math.ceil(timeToReveal / (1000 * 60 * 60 * 24)));
-  const daysToExpiry = Math.max(0, Math.ceil(timeToExpiry / (1000 * 60 * 60 * 24)));
   
   const getPhaseColor = (phase: string) => {
     switch (phase) {
@@ -70,7 +65,7 @@ const BlindSignalCard = ({ signal, variant = "default" }: BlindSignalCardProps) 
 
   return (
     <Card className={cn(
-      "group hover:shadow-signal transition-all duration-300 hover:scale-[1.02]",
+      "group hover:shadow-signal transition-all duration-300",
       signal.phase === "expired" && "opacity-75"
     )}>
       <CardHeader className="pb-3">
@@ -140,7 +135,7 @@ const BlindSignalCard = ({ signal, variant = "default" }: BlindSignalCardProps) 
             <div className="font-medium flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {signal.phase === "commit" ? `${daysToReveal}d` :
-               signal.phase === "unlock" ? `${daysToExpiry}d` :
+               signal.phase === "unlock" ? `Available` :
                signal.phase === "reveal" ? "Available" : "Failed"}
             </div>
           </div>

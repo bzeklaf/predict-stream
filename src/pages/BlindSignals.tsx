@@ -4,7 +4,6 @@ import Navigation from "@/components/layout/Navigation";
 import BlindSignalCard from "@/components/signal/BlindSignalCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Shield,
@@ -12,14 +11,11 @@ import {
   EyeOff,
   Lock,
   Unlock,
-  Clock,
   TrendingUp,
-  AlertTriangle,
   Plus,
   Filter
 } from "lucide-react";
 
-// Mock data for BlindSignals
 const blindSignals = [
   {
     id: "bs001",
@@ -75,7 +71,6 @@ const blindSignals = [
 
 const BlindSignals = () => {
   const [activeTab, setActiveTab] = useState("all");
-  const [filterPhase, setFilterPhase] = useState("all");
 
   const filteredSignals = blindSignals.filter(signal => {
     if (activeTab === "all") return true;
@@ -97,7 +92,6 @@ const BlindSignals = () => {
       <Navigation />
       
       <div className="container mx-auto px-6 py-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -120,7 +114,6 @@ const BlindSignals = () => {
           </div>
         </div>
 
-        {/* How it Works Banner */}
         <Card className="mb-8 bg-gradient-signal border-primary/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4 mb-4">
@@ -159,7 +152,6 @@ const BlindSignals = () => {
           </CardContent>
         </Card>
 
-        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="pb-2">
@@ -218,7 +210,6 @@ const BlindSignals = () => {
           </Card>
         </div>
 
-        {/* Signals */}
         <Card>
           <CardHeader>
             <CardTitle>Active BlindSignals</CardTitle>

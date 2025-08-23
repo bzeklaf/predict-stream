@@ -30,25 +30,24 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/market" element={<Market />} />
-          <Route path="/vaults" element={<Vaults />} />
-          <Route path="/blind-signals" element={<BlindSignals />} />
-        <Route path="/groups" element={<Groups />} />
-        <Route path="/groups/:id" element={<GroupDetail />} />
-        <Route path="/create-group" element={<CreateGroup />} />
-          <Route path="/profiles" element={<Profiles />} />
-          <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/create" element={<Create />} />
-          <Route path="/signal/:id" element={<SignalDetail />} />
-          <Route path="/profile/:address" element={<Profile />} />
-          <Route path="/auth" element={<Auth />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/market" element={<Market />} />
+            <Route path="/vaults" element={<Vaults />} />
+            <Route path="/blind-signals" element={<BlindSignals />} />
+            <Route path="/groups" element={<Groups />} />
+            <Route path="/groups/:id" element={<GroupDetail />} />
+            <Route path="/create-group" element={<CreateGroup />} />
+            <Route path="/profiles" element={<Profiles />} />
+            <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/create" element={<Create />} />
+            <Route path="/signal/:id" element={<SignalDetail />} />
+            <Route path="/profile/:address" element={<Profile />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>

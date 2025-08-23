@@ -107,14 +107,14 @@ const BlindSignals = () => {
               <Filter className="w-5 h-5" />
               Filter
             </Button>
-            <Button variant="signal" size="lg" className="gap-2">
+            <Button variant="default" size="lg" className="gap-2">
               <Plus className="w-5 h-5" />
               Create BlindSignal
             </Button>
           </div>
         </div>
 
-        <Card className="mb-8 bg-gradient-signal border-primary/20">
+        <Card className="mb-8 bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
           <CardContent className="pt-6">
             <div className="flex items-center gap-4 mb-4">
               <Shield className="w-6 h-6 text-primary" />

@@ -65,7 +65,7 @@ const BlindSignalCard = ({ signal }: BlindSignalCardProps) => {
 
   return (
     <Card className={cn(
-      "group hover:shadow-signal transition-all duration-300",
+      "group hover:shadow-lg transition-all duration-300",
       signal.phase === "expired" && "opacity-75"
     )}>
       <CardHeader className="pb-3">
@@ -173,12 +173,12 @@ const BlindSignalCard = ({ signal }: BlindSignalCardProps) => {
             </Button>
           </Link>
           {signal.phase === "unlock" && (
-            <Button variant="signal" className="flex-1">
+            <Button variant="default" className="flex-1">
               Unlock ${signal.unlockPrice}
             </Button>
           )}
           {signal.phase === "reveal" && (
-            <Button variant="signal" className="flex-1">
+            <Button variant="default" className="flex-1">
               <Unlock className="w-4 h-4 mr-1" />
               View Full Signal
             </Button>

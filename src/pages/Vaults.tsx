@@ -113,7 +113,7 @@ const Vaults = () => {
               <Building2 className="w-5 h-5" />
               Create MetaVault
             </Button>
-            <Button variant="signal" size="lg" className="gap-2">
+            <Button variant="default" size="lg" className="gap-2">
               <Plus className="w-5 h-5" />
               Launch SignalVault
             </Button>
@@ -187,7 +187,7 @@ const Vaults = () => {
           <TabsContent value="signal-vaults" className="mt-6">
             <div className="space-y-6">
               {signalVaults.map((vault) => (
-                <Card key={vault.id} className="hover:shadow-signal transition-all">
+                <Card key={vault.id} className="hover:shadow-lg transition-all">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
@@ -211,7 +211,7 @@ const Vaults = () => {
                           <Eye className="w-4 h-4 mr-1" />
                           Details
                         </Button>
-                        <Button variant="signal" size="sm">
+                        <Button variant="default" size="sm">
                           Deposit
                         </Button>
                       </div>
@@ -256,7 +256,7 @@ const Vaults = () => {
           <TabsContent value="meta-vaults" className="mt-6">
             <div className="space-y-6">
               {metaVaults.map((vault) => (
-                <Card key={vault.id} className="hover:shadow-signal transition-all">
+                <Card key={vault.id} className="hover:shadow-lg transition-all">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
@@ -279,7 +279,7 @@ const Vaults = () => {
                           <Eye className="w-4 h-4 mr-1" />
                           Portfolio
                         </Button>
-                        <Button variant="signal" size="sm">
+                        <Button variant="default" size="sm">
                           Deposit
                         </Button>
                       </div>

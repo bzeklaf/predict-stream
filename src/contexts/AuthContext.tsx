@@ -111,10 +111,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const walletAddress = accounts[0];
       console.log('Signing in with wallet:', walletAddress);
       
-      // Create a valid email format using the wallet address
-      // Using @example.com which is a reserved domain for documentation/testing
-      const email = `${walletAddress.toLowerCase()}@example.com`;
-      const password = walletAddress.toLowerCase(); // Use lowercase for consistency
+      // Use wallet address as both email and password for Supabase auth
+      // This is a workaround since Supabase requires email format
+      const email = `${walletAddress.toLowerCase().replace('0x', '')}@wallet.eth`;
+      const password = walletAddress.toLowerCase();
       
       // Try to sign in first
       let { error } = await supabase.auth.signInWithPassword({
@@ -156,7 +156,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         toast({
           title: "Welcome!",
-          description: "Account created and wallet connected successfully.",
+          description: "Wallet connected and account created successfully.",
         });
       } else if (error) {
         console.error('Sign in error:', error);

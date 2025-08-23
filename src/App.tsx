@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -16,6 +17,8 @@ import CreateGroup from "./pages/CreateGroup";
 import SignalDetail from "./pages/SignalDetail";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import Vaults from "./pages/Vaults";
+import BlindSignals from "./pages/BlindSignals";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,6 +34,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/market" element={<Market />} />
+          <Route path="/vaults" element={<Vaults />} />
+          <Route path="/blind-signals" element={<BlindSignals />} />
         <Route path="/groups" element={<Groups />} />
         <Route path="/groups/:id" element={<GroupDetail />} />
         <Route path="/create-group" element={<CreateGroup />} />

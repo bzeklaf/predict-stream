@@ -1,11 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/layout/Navigation";
 import SignalCard from "@/components/signal/SignalCard";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { 
@@ -19,38 +18,20 @@ import {
 import AuthGuard from '@/components/auth/AuthGuard';
 
 const Dashboard = () => {
-  const { user } = useAuth();
   const { toast } = useToast();
   const [signals, setSignals] = useState([]);
-  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      loadDashboardData();
-    }
-  }, [user]);
+    loadDashboardData();
+  }, []);
 
   const loadDashboardData = async () => {
     try {
-      // Load user profile
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      if (profileError && profileError.code !== 'PGRST116') {
-        throw profileError;
-      }
-
-      setUserProfile(profileData);
-
-      // Load user's signals
+      // Load all signals since auth is disabled
       const { data: signalsData, error: signalsError } = await supabase
         .from('signals')
         .select('*')
-        .eq('creator_id', user.id)
         .order('created_at', { ascending: false });
 
       if (signalsError) throw signalsError;
@@ -71,27 +52,25 @@ const Dashboard = () => {
   const stats = [
     {
       title: "Alpha Score",
-      value: userProfile?.alpha_score || 0,
+      value: 0,
       icon: Trophy,
       color: "text-yellow-500"
     },
     {
       title: "Total Signals",
-      value: userProfile?.total_signals || 0,
+      value: signals.length,
       icon: Target,
       color: "text-blue-500"
     },
     {
       title: "Success Rate",
-      value: userProfile?.total_signals > 0 
-        ? `${Math.round((userProfile.successful_signals / userProfile.total_signals) * 100)}%`
-        : "0%",
+      value: "0%",
       icon: TrendingUp,
       color: "text-green-500"
     },
     {
       title: "Followers",
-      value: 0, // This would come from a followers table
+      value: 0,
       icon: Users,
       color: "text-purple-500"
     }
@@ -116,7 +95,7 @@ const Dashboard = () => {
   }
 
   return (
-    <AuthGuard requireAuth={true}>
+    <AuthGuard requireAuth={false}>
       <div className="min-h-screen bg-background">
         <Navigation />
         
@@ -124,7 +103,7 @@ const Dashboard = () => {
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
             <p className="text-muted-foreground">
-              Track your performance and manage your signals
+              Browse and explore signals (Authentication disabled)
             </p>
           </div>
 
@@ -213,7 +192,7 @@ const Dashboard = () => {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Your Recent Signals</CardTitle>
+                <CardTitle>All Signals</CardTitle>
                 <Link to="/create">
                   <Button size="sm">
                     <Plus className="w-4 h-4 mr-2" />
@@ -241,7 +220,7 @@ const Dashboard = () => {
                   <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No signals yet</h3>
                   <p className="text-muted-foreground mb-4">
-                    Create your first signal to start building your reputation
+                    Create your first signal to get started
                   </p>
                   <Button asChild>
                     <Link to="/create">

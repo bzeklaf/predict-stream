@@ -43,36 +43,6 @@ export type Database = {
           },
         ]
       }
-      profiles: {
-        Row: {
-          alpha_score: number | null
-          created_at: string | null
-          display_name: string | null
-          id: string
-          successful_signals: number | null
-          total_signals: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          alpha_score?: number | null
-          created_at?: string | null
-          display_name?: string | null
-          id: string
-          successful_signals?: number | null
-          total_signals?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          alpha_score?: number | null
-          created_at?: string | null
-          display_name?: string | null
-          id?: string
-          successful_signals?: number | null
-          total_signals?: number | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       signal_groups: {
         Row: {
           access_model: Database["public"]["Enums"]["access_model_type"]

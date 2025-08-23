@@ -82,10 +82,10 @@ const Create = () => {
         current_price: parseFloat(formData.currentPrice),
         confidence: formData.confidence[0],
         stake_amount: parseFloat(formData.stake),
-        time_horizon: `${formData.timeHorizon} days`,
+        time_horizon: formData.timeHorizon,
         resolution_time: new Date(Date.now() + parseInt(formData.timeHorizon) * 24 * 60 * 60 * 1000).toISOString(),
         tags: formData.tags,
-        status: 'active'
+        status: 'active' as const
       };
 
       const { error } = await supabase

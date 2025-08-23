@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,9 +18,9 @@ export default function CreateGroup() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    access_model: "",
+    access_model: "" as "free" | "subscription" | "pay_per_call" | "conditional",
     price: "",
-    billing_interval: "monthly",
+    billing_interval: "monthly" as "monthly" | "yearly",
     conditions: {
       type: "",
       value: ""
@@ -100,7 +101,7 @@ export default function CreateGroup() {
               <Label htmlFor="billing_interval">Billing Interval</Label>
               <Select 
                 value={formData.billing_interval} 
-                onValueChange={(value) => setFormData({ ...formData, billing_interval: value })}
+                onValueChange={(value: "monthly" | "yearly") => setFormData({ ...formData, billing_interval: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -231,7 +232,7 @@ export default function CreateGroup() {
                   <Label htmlFor="access_model">Access Model</Label>
                   <Select 
                     value={formData.access_model} 
-                    onValueChange={(value) => setFormData({ ...formData, access_model: value })}
+                    onValueChange={(value: "free" | "subscription" | "pay_per_call" | "conditional") => setFormData({ ...formData, access_model: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Choose how users access your signals" />

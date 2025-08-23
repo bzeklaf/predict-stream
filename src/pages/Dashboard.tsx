@@ -1,77 +1,51 @@
+
 import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/layout/Navigation";
+import SignalCard from "@/components/signal/SignalCard";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import SignalCard from "@/components/signal/SignalCard";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { 
   TrendingUp, 
-  DollarSign, 
   Target, 
-  Activity,
+  Users, 
+  Trophy,
   Plus,
-  Building2,
-  Users,
-  Settings,
-  Eye,
-  TrendingDown,
-  BarChart3,
-  ShoppingCart
+  BarChart3
 } from "lucide-react";
-import { Link } from "react-router-dom";
-
-interface Signal {
-  id: string;
-  title: string;
-  description: string;
-  creator_id: string;
-  asset: string;
-  prediction: "bullish" | "bearish";
-  target_price: number;
-  current_price: number;
-  confidence: number;
-  stake_amount: number;
-  time_horizon: string;
-  resolution_time: string;
-  status: string;
-  tags: string[];
-}
-
-interface SignalGroup {
-  id: string;
-  name: string;
-  description: string;
-  access_model: string;
-  price: number;
-  _count?: { signals: number; members: number };
-}
 
 const Dashboard = () => {
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("created");
-  const [signals, setSignals] = useState<Signal[]>([]);
-  const [userGroups, setUserGroups] = useState<SignalGroup[]>([]);
+  const [signals, setSignals] = useState([]);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
+    if (user) {
+      loadDashboardData();
     }
-    loadData();
-  }, [user, navigate]);
+  }, [user]);
 
-  const loadData = async () => {
-    if (!user) return;
-    
+  const loadDashboardData = async () => {
     try {
+      // Load user profile
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        throw profileError;
+      }
+
+      setUserProfile(profileData);
+
       // Load user's signals
       const { data: signalsData, error: signalsError } = await supabase
         .from('signals')
@@ -81,32 +55,7 @@ const Dashboard = () => {
 
       if (signalsError) throw signalsError;
 
-      // Load user's groups
-      const { data: groupsData, error: groupsError } = await supabase
-        .from('signal_groups')
-        .select(`
-          *,
-          signals!inner(count),
-          group_memberships!inner(count)
-        `)
-        .eq('creator_id', user.id)
-        .eq('is_active', true);
-
-      if (groupsError) throw groupsError;
-
-      const transformedGroups = groupsData?.map(group => ({
-        ...group,
-        _count: {
-          signals: group.signals?.[0]?.count || 0,
-          members: group.group_memberships?.[0]?.count || 0
-        }
-      })) || [];
-
-      setSignals((signalsData || []).map(signal => ({
-        ...signal,
-        prediction: signal.prediction as "bullish" | "bearish"
-      })));
-      setUserGroups(transformedGroups);
+      setSignals(signalsData || []);
     } catch (error) {
       console.error("Error loading dashboard data:", error);
       toast({
@@ -119,434 +68,188 @@ const Dashboard = () => {
     }
   };
 
-  const creatorStats = {
-    totalSignals: signals.length,
-    activeSignals: signals.filter(s => s.status === 'active').length,
-    resolvedSignals: signals.filter(s => s.status === 'resolved').length,
-    totalStaked: signals.reduce((sum, s) => sum + s.stake_amount, 0),
-    accuracyRate: 75, // This would need to be calculated based on outcomes
-    totalEarnings: 890 // This would come from actual earnings data
-  };
-
-  const consumerStats = {
-    signalsPurchased: 28, // This would come from purchase history
-    activeSubscriptions: 3, // This would come from active memberships
-    totalSpent: 425, // This would come from payment history
-    portfolioROI: 12.8, // This would be calculated from trade outcomes
-    profitableTrades: 19, // This would come from trade history
-    avgReturn: 8.5 // This would be calculated from trade outcomes
-  };
+  const stats = [
+    {
+      title: "Alpha Score",
+      value: userProfile?.alpha_score || 0,
+      icon: Trophy,
+      color: "text-yellow-500"
+    },
+    {
+      title: "Total Signals",
+      value: userProfile?.total_signals || 0,
+      icon: Target,
+      color: "text-blue-500"
+    },
+    {
+      title: "Success Rate",
+      value: userProfile?.total_signals > 0 
+        ? `${Math.round((userProfile.successful_signals / userProfile.total_signals) * 100)}%`
+        : "0%",
+      icon: TrendingUp,
+      color: "text-green-500"
+    },
+    {
+      title: "Followers",
+      value: 0, // This would come from a followers table
+      icon: Users,
+      color: "text-purple-500"
+    }
+  ];
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
         <div className="container mx-auto px-6 py-8">
-          <div className="animate-pulse space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-32 bg-muted rounded-lg" />
-            ))}
+          <div className="animate-pulse space-y-6">
+            <div className="h-8 bg-muted rounded w-48"></div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="h-32 bg-muted rounded-lg"></div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
     );
   }
 
-// Transform signals to match the expected format for SignalCard component
-const transformedSignals = signals.slice(0, 4).map(signal => ({
-  id: signal.id,
-  title: signal.title,
-  description: signal.description || "",
-  creator: user.email || "Unknown",
-  creatorScore: profile?.alpha_score || 0,
-  asset: signal.asset,
-  prediction: signal.prediction as "bullish" | "bearish",
-  targetPrice: signal.target_price,
-  currentPrice: signal.current_price,
-  confidence: signal.confidence,
-  stake: signal.stake_amount,
-  timeHorizon: signal.time_horizon,
-  resolutionTime: new Date(signal.resolution_time),
-  isResolved: signal.status === 'resolved',
-  isUnlocked: true,
-  unlockPrice: 2,
-  tags: signal.tags || []
-}));
-
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       
       <div className="container mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground mt-2">
-              Track your signal creation and consumption performance
-            </p>
-          </div>
-          <div className="flex gap-2">
-            <Link to="/create-group">
-              <Button variant="outline" size="lg" className="gap-2">
-                <Building2 className="w-5 h-5" />
-                Create Group
-              </Button>
-            </Link>
-            <Link to="/create">
-              <Button variant="signal" size="lg" className="gap-2">
-                <Plus className="w-5 h-5" />
-                Create Signal
-              </Button>
-            </Link>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Track your performance and manage your signals
+          </p>
         </div>
 
-        {/* Creator Stats */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              Creator Performance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Total Signals
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-primary" />
-                    <span className="text-2xl font-bold">{creatorStats.totalSignals}</span>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          {stats.map((stat) => (
+            <Card key={stat.title}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-muted-foreground">
+                      {stat.title}
+                    </p>
+                    <p className="text-2xl font-bold">
+                      {stat.value}
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Active Signals
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-bullish" />
-                    <span className="text-2xl font-bold">{creatorStats.activeSignals}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Accuracy Rate
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4 text-primary" />
-                    <span className="text-2xl font-bold">{creatorStats.accuracyRate}%</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Total Staked
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-warning" />
-                    <span className="text-2xl font-bold">${creatorStats.totalStaked}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Total Earnings
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-bullish" />
-                    <span className="text-2xl font-bold">${creatorStats.totalEarnings}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Resolved
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline">{creatorStats.resolvedSignals}</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Consumer Stats */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ShoppingCart className="w-5 h-5" />
-              Consumer Performance
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Signals Purchased
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-primary" />
-                    <span className="text-2xl font-bold">{consumerStats.signalsPurchased}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Active Subscriptions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4 text-primary" />
-                    <span className="text-2xl font-bold">{consumerStats.activeSubscriptions}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Portfolio ROI
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <BarChart3 className="w-4 h-4 text-bullish" />
-                    <span className="text-2xl font-bold">+{consumerStats.portfolioROI}%</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Total Spent
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4 text-warning" />
-                    <span className="text-2xl font-bold">${consumerStats.totalSpent}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Profitable Trades
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-bullish" />
-                    <span className="text-2xl font-bold">{consumerStats.profitableTrades}</span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    Avg Return
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Target className="w-4 h-4 text-bullish" />
-                    <span className="text-2xl font-bold">+{consumerStats.avgReturn}%</span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Groups Management Section */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="w-5 h-5" />
-              Your Signal Groups
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {userGroups.length > 0 ? (
-                userGroups.map((group) => (
-                  <div key={group.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-semibold">{group.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {group._count?.members || 0} members • {group._count?.signals || 0} signals
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="gap-1">
-                          <DollarSign className="w-3 h-3" />
-                          {group.access_model === 'free' ? 'Free' : 
-                           group.access_model === 'subscription' ? `$${group.price}/month` :
-                           group.access_model === 'pay_per_call' ? `$${group.price}/signal` : 
-                           'Conditional'}
-                        </Badge>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/groups/${group.id}`}>
-                            <Eye className="w-4 h-4 mr-1" />
-                            View
-                          </Link>
-                        </Button>
-                        <Button variant="outline" size="sm">
-                          <Settings className="w-4 h-4 mr-1" />
-                          Manage
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-4 border-2 border-dashed rounded-lg">
-                  <Building2 className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground mb-2">Create your first signal group</p>
-                  <Link to="/create-group">
-                    <Button variant="outline" size="sm">
-                      <Plus className="w-4 h-4 mr-1" />
-                      Create Group
-                    </Button>
-                  </Link>
+                  <stat.icon className={`h-8 w-8 ${stat.color}`} />
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-        {/* Signals Table */}
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/10 rounded-lg">
+                  <Plus className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">Create Signal</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Share your next prediction
+                  </p>
+                  <Button asChild size="sm">
+                    <Link to="/create">Create Now</Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-blue-500/10 rounded-lg">
+                  <Users className="h-6 w-6 text-blue-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">Signal Groups</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Create or join groups
+                  </p>
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/groups">View Groups</Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-green-500/10 rounded-lg">
+                  <BarChart3 className="h-6 w-6 text-green-500" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">Market Analysis</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Explore market signals
+                  </p>
+                  <Button asChild variant="outline" size="sm">
+                    <Link to="/market">Browse Market</Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Recent Signals */}
         <Card>
           <CardHeader>
-            <CardTitle>Your Activity</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle>Your Recent Signals</CardTitle>
+              <Link to="/create">
+                <Button size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Signal
+                </Button>
+              </Link>
+            </div>
           </CardHeader>
           <CardContent>
-            <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="created">Created</TabsTrigger>
-                <TabsTrigger value="subscribed">Subscribed</TabsTrigger>
-                <TabsTrigger value="purchased">Purchased</TabsTrigger>
-                <TabsTrigger value="all">All</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="created" className="mt-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {transformedSignals.length > 0 ? (
-                    transformedSignals.map((signal) => (
-                      <SignalCard key={signal.id} signal={signal} />
-                    ))
-                  ) : (
-                    <div className="col-span-2 text-center py-8">
-                      <p className="text-muted-foreground">No signals created yet</p>
-                      <Link to="/create">
-                        <Button className="mt-4">Create Your First Signal</Button>
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="subscribed" className="mt-6">
-                <div className="space-y-4">
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-semibold">Premium Crypto Signals</h3>
-                          <p className="text-sm text-muted-foreground">Subscribed • 15 signals this month</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-bullish">+18.5% ROI</Badge>
-                          <Button variant="outline" size="sm" asChild>
-                            <Link to="/groups/1">View Group</Link>
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-semibold">DeFi Alpha Group</h3>
-                          <p className="text-sm text-muted-foreground">Subscribed • 8 signals this month</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-bearish">-3.2% ROI</Badge>
-                          <Button variant="outline" size="sm" asChild>
-                            <Link to="/groups/2">View Group</Link>
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="purchased" className="mt-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {transformedSignals.map((signal) => (
-                    <div key={signal.id} className="relative">
-                      <SignalCard signal={signal} />
-                      <div className="absolute top-2 right-2">
-                        <Badge variant="outline" className="text-bullish">+12.5%</Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="all" className="mt-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {transformedSignals.length > 0 ? (
-                    transformedSignals.map((signal) => (
-                      <SignalCard key={signal.id} signal={signal} />
-                    ))
-                  ) : (
-                    <div className="col-span-2 text-center py-8">
-                      <p className="text-muted-foreground">No signals found</p>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-            </Tabs>
+            {signals.length > 0 ? (
+              <div className="space-y-4">
+                {signals.slice(0, 5).map((signal) => (
+                  <SignalCard key={signal.id} signal={signal} />
+                ))}
+                {signals.length > 5 && (
+                  <div className="text-center pt-4">
+                    <Button variant="outline" asChild>
+                      <Link to="/market">View All Signals</Link>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No signals yet</h3>
+                <p className="text-muted-foreground mb-4">
+                  Create your first signal to start building your reputation
+                </p>
+                <Button asChild>
+                  <Link to="/create">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Signal
+                  </Link>
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -2,13 +2,13 @@
 import { createContext, useContext, ReactNode } from 'react';
 
 interface AuthContextType {
-  user: null;
-  session: null;
+  user: any;
+  session: any;
   loading: false;
   signInWithWallet: () => Promise<{ error: any }>;
   signInWithTelegram: () => Promise<{ error: any }>;
   signOut: () => Promise<void>;
-  profile: null;
+  profile: any;
   refreshProfile: () => Promise<void>;
 }
 
@@ -43,7 +43,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // No-op since auth is disabled
   };
 
-  const value = {
+  const value: AuthContextType = {
     user: null,
     session: null,
     loading: false,

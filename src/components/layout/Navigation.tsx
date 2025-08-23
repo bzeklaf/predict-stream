@@ -1,3 +1,4 @@
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -65,33 +66,11 @@ const Navigation = () => {
           </div>
 
           <div className="flex items-center space-x-4">
-            {user ? (
-              <>
-                <Link to="/dashboard">
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <User className="w-4 h-4" />
-                    <span className="hidden md:inline">
-                      {profile?.display_name || user.email?.split('@')[0]}
-                    </span>
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => signOut()}
-                  className="gap-2"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span className="hidden md:inline">Sign Out</span>
-                </Button>
-              </>
-            ) : (
-              <Link to="/auth">
-                <Button variant="signal" size="sm">
-                  Sign In
-                </Button>
-              </Link>
-            )}
+            <Link to="/auth">
+              <Button variant="signal" size="sm">
+                Sign In
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

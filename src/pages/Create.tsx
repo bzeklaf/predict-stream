@@ -58,48 +58,14 @@ const Create = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to create a signal",
-        variant: "destructive",
-      });
-      navigate('/auth');
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      const signalData = {
-        creator_id: user.id,
-        title: formData.title,
-        description: formData.description,
-        asset: formData.asset,
-        prediction: formData.prediction,
-        target_price: parseFloat(formData.targetPrice),
-        current_price: parseFloat(formData.currentPrice),
-        confidence: formData.confidence[0],
-        stake_amount: parseFloat(formData.stake),
-        time_horizon: formData.timeHorizon,
-        resolution_time: new Date(Date.now() + parseInt(formData.timeHorizon) * 24 * 60 * 60 * 1000).toISOString(),
-        tags: formData.tags,
-        status: 'active' as const
-      };
-
-      const { error } = await supabase
-        .from('signals')
-        .insert([signalData]);
-
-      if (error) throw error;
-
       toast({
-        title: "Success!",
-        description: "Signal created successfully",
+        title: "Authentication Disabled",
+        description: "Signal creation is disabled because authentication has been removed",
+        variant: "destructive",
       });
-      
-      navigate('/dashboard');
     } catch (error) {
       console.error("Error creating signal:", error);
       toast({
@@ -357,12 +323,11 @@ const Create = () => {
                   <div className="flex items-start gap-2 text-sm">
                     <AlertCircle className="w-4 h-4 text-warning mt-0.5" />
                     <div>
-                      <p className="font-medium">Important Notes:</p>
+                      <p className="font-medium">Authentication Disabled:</p>
                       <ul className="mt-1 text-muted-foreground space-y-1">
-                        <li>• Your stake will be locked until signal resolution</li>
-                        <li>• Resolution occurs automatically via oracle at expiry</li>
-                        <li>• Incorrect predictions may result in stake slashing</li>
-                        <li>• Users pay {formData.stake ? Math.max(2, Math.floor(Number(formData.stake) * 0.01)) : 2} USDC to unlock this signal</li>
+                        <li>• Signal creation is currently disabled</li>
+                        <li>• Authentication system has been removed</li>
+                        <li>• This form is for demonstration purposes only</li>
                       </ul>
                     </div>
                   </div>
@@ -370,7 +335,7 @@ const Create = () => {
 
                 <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                   <Target className="w-5 h-5 mr-2" />
-                  {isSubmitting ? "Creating Signal..." : "Submit Signal"}
+                  {isSubmitting ? "Creating Signal..." : "Submit Signal (Disabled)"}
                 </Button>
               </div>
             </CardContent>

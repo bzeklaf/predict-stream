@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -36,38 +35,11 @@ export default function CreateGroup() {
     setIsSubmitting(true);
 
     try {
-      if (!user) {
-        toast({
-          title: "Authentication Required",
-          description: "Please sign in to create a group",
-          variant: "destructive",
-        });
-        navigate('/auth');
-        return;
-      }
-      
-      const groupData = {
-        creator_id: user.id,
-        name: formData.name,
-        description: formData.description,
-        access_model: formData.access_model,
-        price: formData.price ? parseFloat(formData.price) : null,
-        billing_interval: formData.access_model === "subscription" ? formData.billing_interval : null,
-        conditions: formData.access_model === "conditional" ? formData.conditions : null
-      };
-
-      const { error } = await supabase
-        .from("signal_groups")
-        .insert([groupData]);
-
-      if (error) throw error;
-
       toast({
-        title: "Success!",
-        description: "Signal group created successfully",
+        title: "Authentication Disabled",
+        description: "Group creation is disabled because authentication has been removed",
+        variant: "destructive",
       });
-      
-      navigate("/groups");
     } catch (error) {
       console.error("Error creating group:", error);
       toast({
@@ -270,9 +242,9 @@ export default function CreateGroup() {
 
                 <div className="pt-4 border-t">
                   <div className="flex items-center gap-2 mb-4">
-                    <Badge variant="secondary">Mock Integration</Badge>
+                    <Badge variant="secondary">Authentication Disabled</Badge>
                     <span className="text-sm text-muted-foreground">
-                      Payment and verification systems are simulated
+                      Group creation is currently disabled
                     </span>
                   </div>
                   
@@ -281,7 +253,7 @@ export default function CreateGroup() {
                     className="w-full"
                     disabled={isSubmitting || !formData.name || !formData.access_model}
                   >
-                    {isSubmitting ? "Creating..." : "Create Signal Group"}
+                    {isSubmitting ? "Creating..." : "Create Signal Group (Disabled)"}
                   </Button>
                 </div>
               </CardContent>

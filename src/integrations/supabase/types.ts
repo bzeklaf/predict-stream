@@ -14,7 +14,170 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      group_memberships: {
+        Row: {
+          group_id: string
+          id: string
+          joined_at: string | null
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          id?: string
+          joined_at?: string | null
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          id?: string
+          joined_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_memberships_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "signal_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          alpha_score: number | null
+          created_at: string | null
+          display_name: string | null
+          id: string
+          successful_signals: number | null
+          total_signals: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          alpha_score?: number | null
+          created_at?: string | null
+          display_name?: string | null
+          id: string
+          successful_signals?: number | null
+          total_signals?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          alpha_score?: number | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string
+          successful_signals?: number | null
+          total_signals?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      signal_groups: {
+        Row: {
+          access_model: Database["public"]["Enums"]["access_model_type"]
+          billing_interval:
+            | Database["public"]["Enums"]["billing_interval_type"]
+            | null
+          conditions: Json | null
+          created_at: string | null
+          creator_id: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          access_model: Database["public"]["Enums"]["access_model_type"]
+          billing_interval?:
+            | Database["public"]["Enums"]["billing_interval_type"]
+            | null
+          conditions?: Json | null
+          created_at?: string | null
+          creator_id: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          access_model?: Database["public"]["Enums"]["access_model_type"]
+          billing_interval?:
+            | Database["public"]["Enums"]["billing_interval_type"]
+            | null
+          conditions?: Json | null
+          created_at?: string | null
+          creator_id?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      signals: {
+        Row: {
+          asset: string
+          confidence: number
+          created_at: string | null
+          creator_id: string
+          current_price: number
+          description: string | null
+          id: string
+          prediction: Database["public"]["Enums"]["prediction_type"]
+          resolution_time: string
+          stake_amount: number
+          status: Database["public"]["Enums"]["signal_status"] | null
+          tags: string[] | null
+          target_price: number
+          time_horizon: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          asset: string
+          confidence: number
+          created_at?: string | null
+          creator_id: string
+          current_price: number
+          description?: string | null
+          id?: string
+          prediction: Database["public"]["Enums"]["prediction_type"]
+          resolution_time: string
+          stake_amount: number
+          status?: Database["public"]["Enums"]["signal_status"] | null
+          tags?: string[] | null
+          target_price: number
+          time_horizon: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          asset?: string
+          confidence?: number
+          created_at?: string | null
+          creator_id?: string
+          current_price?: number
+          description?: string | null
+          id?: string
+          prediction?: Database["public"]["Enums"]["prediction_type"]
+          resolution_time?: string
+          stake_amount?: number
+          status?: Database["public"]["Enums"]["signal_status"] | null
+          tags?: string[] | null
+          target_price?: number
+          time_horizon?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +186,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      access_model_type:
+        | "free"
+        | "subscription"
+        | "pay_per_call"
+        | "conditional"
+      billing_interval_type: "monthly" | "yearly"
+      prediction_type: "bullish" | "bearish"
+      signal_status: "active" | "resolved" | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +320,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      access_model_type: [
+        "free",
+        "subscription",
+        "pay_per_call",
+        "conditional",
+      ],
+      billing_interval_type: ["monthly", "yearly"],
+      prediction_type: ["bullish", "bearish"],
+      signal_status: ["active", "resolved", "expired"],
+    },
   },
 } as const

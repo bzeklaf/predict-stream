@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      comments: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          parent_id: string | null
+          signal_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          parent_id?: string | null
+          signal_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          parent_id?: string | null
+          signal_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "comments_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "comments_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       group_memberships: {
         Row: {
           group_id: string
@@ -42,6 +87,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          link: string | null
+          message: string
+          metadata: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message: string
+          metadata?: Json | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          link?: string | null
+          message?: string
+          metadata?: Json | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string
+          specialties: string[] | null
+          updated_at: string | null
+          wallet_address: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string
+          specialties?: string[] | null
+          updated_at?: string | null
+          wallet_address: string
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string
+          specialties?: string[] | null
+          updated_at?: string | null
+          wallet_address?: string
+        }
+        Relationships: []
       }
       signal_groups: {
         Row: {
@@ -90,6 +204,73 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      signal_resolutions: {
+        Row: {
+          final_price: number
+          id: string
+          is_correct: boolean
+          oracle_data: Json | null
+          resolved_at: string | null
+          signal_id: string
+        }
+        Insert: {
+          final_price: number
+          id?: string
+          is_correct: boolean
+          oracle_data?: Json | null
+          resolved_at?: string | null
+          signal_id: string
+        }
+        Update: {
+          final_price?: number
+          id?: string
+          is_correct?: boolean
+          oracle_data?: Json | null
+          resolved_at?: string | null
+          signal_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signal_resolutions_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: true
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      signal_unlocks: {
+        Row: {
+          id: string
+          signal_id: string
+          unlock_price: number
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          signal_id: string
+          unlock_price: number
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          signal_id?: string
+          unlock_price?: number
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "signal_unlocks_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       signals: {
         Row: {
@@ -145,6 +326,120 @@ export type Database = {
           time_horizon?: string
           title?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          group_id: string | null
+          id: string
+          metadata: Json | null
+          signal_id: string | null
+          status: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          group_id?: string | null
+          id?: string
+          metadata?: Json | null
+          signal_id?: string | null
+          status?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          group_id?: string | null
+          id?: string
+          metadata?: Json | null
+          signal_id?: string | null
+          status?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "signal_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_signal_id_fkey"
+            columns: ["signal_id"]
+            isOneToOne: false
+            referencedRelation: "signals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_follows: {
+        Row: {
+          created_at: string | null
+          follower_id: string
+          following_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string | null
+          follower_id: string
+          following_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string | null
+          follower_id?: string
+          following_id?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      user_stats: {
+        Row: {
+          accuracy_rate: number | null
+          alpha_score: number | null
+          followers_count: number | null
+          following_count: number | null
+          id: string
+          recent_performance: string | null
+          total_earnings: number | null
+          total_signals: number | null
+          total_staked: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          accuracy_rate?: number | null
+          alpha_score?: number | null
+          followers_count?: number | null
+          following_count?: number | null
+          id?: string
+          recent_performance?: string | null
+          total_earnings?: number | null
+          total_signals?: number | null
+          total_staked?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          accuracy_rate?: number | null
+          alpha_score?: number | null
+          followers_count?: number | null
+          following_count?: number | null
+          id?: string
+          recent_performance?: string | null
+          total_earnings?: number | null
+          total_signals?: number | null
+          total_staked?: number | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

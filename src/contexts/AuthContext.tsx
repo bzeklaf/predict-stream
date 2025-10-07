@@ -1,14 +1,26 @@
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
-import { createContext, useContext, ReactNode } from 'react';
+interface Profile {
+  id: string;
+  user_id: string;
+  email: string | null;
+  display_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  wallet_address: string | null;
+  specialties: string[];
+}
 
 interface AuthContextType {
-  user: any;
-  session: any;
-  loading: false;
-  signInWithWallet: () => Promise<{ error: any }>;
-  signInWithTelegram: () => Promise<{ error: any }>;
-  signOut: () => Promise<void>;
-  profile: any;
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  profile: Profile | null;
+  signUp: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
+  signOut: () => Promise<{ error: Error | null }>;
   refreshProfile: () => Promise<void>;
 }
 
@@ -27,30 +39,122 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const signInWithWallet = async () => {
-    return { error: new Error("Authentication disabled") };
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) throw error;
+      setProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
   };
 
-  const signInWithTelegram = async () => {
-    return { error: new Error("Authentication disabled") };
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
+
+        // Defer profile fetch to avoid blocking
+        if (session?.user) {
+          setTimeout(() => {
+            fetchProfile(session.user.id);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+
+      if (session?.user) {
+        setTimeout(() => {
+          fetchProfile(session.user.id);
+        }, 0);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signUp = async (email: string, password: string) => {
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
+
+      if (error) return { error };
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) return { error };
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
   };
 
   const signOut = async () => {
-    // No-op since auth is disabled
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) return { error };
+      
+      setUser(null);
+      setSession(null);
+      setProfile(null);
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
+    }
   };
 
   const refreshProfile = async () => {
-    // No-op since auth is disabled
+    if (user) {
+      await fetchProfile(user.id);
+    }
   };
 
   const value: AuthContextType = {
-    user: null,
-    session: null,
-    loading: false,
-    signInWithWallet,
-    signInWithTelegram,
+    user,
+    session,
+    loading,
+    profile,
+    signUp,
+    signIn,
     signOut,
-    profile: null,
     refreshProfile,
   };
 

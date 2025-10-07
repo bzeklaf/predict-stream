@@ -58,19 +58,53 @@ const Create = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user || !user.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create signals.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      const resolutionDate = new Date();
+      resolutionDate.setDate(resolutionDate.getDate() + parseInt(formData.timeHorizon));
+
+      const { error } = await supabase
+        .from('signals')
+        .insert({
+          creator_id: user.id,
+          title: formData.title,
+          description: formData.description,
+          asset: formData.asset,
+          prediction: formData.prediction,
+          target_price: parseFloat(formData.targetPrice),
+          current_price: parseFloat(formData.currentPrice),
+          confidence: formData.confidence[0],
+          stake_amount: parseFloat(formData.stake),
+          time_horizon: `${formData.timeHorizon} days`,
+          resolution_time: resolutionDate.toISOString(),
+          tags: formData.tags,
+          status: 'active'
+        });
+
+      if (error) throw error;
+
       toast({
-        title: "Authentication Disabled",
-        description: "Signal creation is disabled because authentication has been removed",
-        variant: "destructive",
+        title: "Success!",
+        description: "Your signal has been created successfully.",
       });
+
+      navigate("/dashboard");
     } catch (error) {
       console.error("Error creating signal:", error);
       toast({
         title: "Error",
-        description: "Failed to create signal",
+        description: "Failed to create signal. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -319,23 +353,9 @@ const Create = () => {
                   </div>
                 </div>
 
-                <div className="p-4 bg-muted/50 rounded-lg">
-                  <div className="flex items-start gap-2 text-sm">
-                    <AlertCircle className="w-4 h-4 text-warning mt-0.5" />
-                    <div>
-                      <p className="font-medium">Authentication Disabled:</p>
-                      <ul className="mt-1 text-muted-foreground space-y-1">
-                        <li>• Signal creation is currently disabled</li>
-                        <li>• Authentication system has been removed</li>
-                        <li>• This form is for demonstration purposes only</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
                 <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                   <Target className="w-5 h-5 mr-2" />
-                  {isSubmitting ? "Creating Signal..." : "Submit Signal (Disabled)"}
+                  {isSubmitting ? "Creating Signal..." : "Submit Signal"}
                 </Button>
               </div>
             </CardContent>

@@ -32,19 +32,55 @@ export default function CreateGroup() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!user || !user.id) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create groups.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      const groupData: any = {
+        creator_id: user.id,
+        name: formData.name,
+        description: formData.description,
+        access_model: formData.access_model,
+        is_active: true
+      };
+
+      if (formData.access_model === 'subscription' || formData.access_model === 'pay_per_call') {
+        groupData.price = parseFloat(formData.price);
+        if (formData.access_model === 'subscription') {
+          groupData.billing_interval = formData.billing_interval;
+        }
+      }
+
+      if (formData.access_model === 'conditional' && formData.conditions.type && formData.conditions.value) {
+        groupData.conditions = formData.conditions;
+      }
+
+      const { error } = await supabase
+        .from('signal_groups')
+        .insert(groupData);
+
+      if (error) throw error;
+
       toast({
-        title: "Authentication Disabled",
-        description: "Group creation is disabled because authentication has been removed",
-        variant: "destructive",
+        title: "Success!",
+        description: "Your signal group has been created.",
       });
+
+      navigate("/groups");
     } catch (error) {
       console.error("Error creating group:", error);
       toast({
         title: "Error",
-        description: "Failed to create signal group. This is a mock version.",
+        description: "Failed to create signal group. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -241,19 +277,12 @@ export default function CreateGroup() {
                 {renderAccessModelFields()}
 
                 <div className="pt-4 border-t">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Badge variant="secondary">Authentication Disabled</Badge>
-                    <span className="text-sm text-muted-foreground">
-                      Group creation is currently disabled
-                    </span>
-                  </div>
-                  
                   <Button 
                     type="submit" 
                     className="w-full"
                     disabled={isSubmitting || !formData.name || !formData.access_model}
                   >
-                    {isSubmitting ? "Creating..." : "Create Signal Group (Disabled)"}
+                    {isSubmitting ? "Creating..." : "Create Signal Group"}
                   </Button>
                 </div>
               </CardContent>

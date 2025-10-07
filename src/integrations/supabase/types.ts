@@ -130,9 +130,11 @@ export type Database = {
           bio: string | null
           created_at: string | null
           display_name: string | null
+          email: string | null
           id: string
           specialties: string[] | null
           updated_at: string | null
+          user_id: string | null
           wallet_address: string
         }
         Insert: {
@@ -140,9 +142,11 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
+          email?: string | null
           id?: string
           specialties?: string[] | null
           updated_at?: string | null
+          user_id?: string | null
           wallet_address: string
         }
         Update: {
@@ -150,9 +154,11 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           display_name?: string | null
+          email?: string | null
           id?: string
           specialties?: string[] | null
           updated_at?: string | null
+          user_id?: string | null
           wallet_address?: string
         }
         Relationships: []
